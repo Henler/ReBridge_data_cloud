@@ -1,0 +1,9 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-unit">
+    <h1>Welcome {{ user.get_username }}</h1>
+    Rebridge Data Cloud does dynamic data cleaning for (re)insurance companies<br />
+</div>
+{% endblock %}

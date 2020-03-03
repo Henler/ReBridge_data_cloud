@@ -1,0 +1,423 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+
+
+{% block title %}Data cloud{% endblock %}
+
+{% block content %}
+<!-- Page Heading --> 
+<h1 class="h3 mb-2 text-gray-800">Treaty details</h1>
+<p class="mb-4">Key metrics identified</p>
+
+
+
+<div class="row">
+
+
+
+  <!-- Objects and losses per layer -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <!-- Collapsable Card Example -->
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#layers" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+        <h6 class="m-0 font-weight-bold text-primary">Key metrics for each layer</h6>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="layers">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <form>
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col">
+                      <label for="Layer 1"><b>Layers</b></label>
+                    </div>
+                    <div class="col">
+                      <label for="Layer 1"><b>Range, SEK</b></label>
+                    </div>
+                    <div class="col">
+                      <label for="Layer 1"><b>Number of objects</b></label>
+                    </div>
+                  </div>
+                    
+
+                  <div class="my-2"></div>
+
+                  {% for values in table_layer_objects_rows %}
+
+                    <div class="row">
+                      <div class="col">
+                        <p>Layer {{ forloop.counter }}</p>
+                      </div>
+                      <div class="col">
+                        <p>{{ values.0 }}-{{ values.1 }}</p>
+                      </div>
+                      <div class="col">
+                        <p>{{ values.2 }}</p>
+                      </div>
+                    </div>
+                    
+
+                    <div class="my-2"></div>
+                  {% endfor %}
+                </div>
+
+
+                <small id="specifyLayers" class="form-text text-muted">Cumulative number of objects.</small>
+              </form>
+            </div>
+
+
+            <div class="col">
+              <div class="chart-bar">
+                <canvas id="ObjectChart"></canvas>
+              </div> 
+            </div>
+          </div>
+
+          <div class="my-2"></div>
+
+          <label  for="Layer 1"><b>Objects per EML band</b></label>
+
+
+          <div class="chart-bar">
+            <canvas id="EMLObjectChart"></canvas>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="row">
+  <!-- Growth per segment -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <!-- Collapsable Card Example -->
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#growth" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+        <h6 class="m-0 font-weight-bold text-primary">Growth per segment</h6>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="growth">
+        <div class="card-body">
+          <div class="chart-bar">
+            <canvas id="growthChart"></canvas>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <!-- Burning costs -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <!-- Collapsable Card Example -->
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#burningcost" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+        <h6 class="m-0 font-weight-bold text-primary">Burning costs</h6>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="burningcost">
+        <div class="card-body"> 
+
+          <div class="my-2"></div>
+
+          <div class="row">
+            <div class="col">
+              <label for="Layer 1"><b>Historical cost per layer</b></label>
+            </div>
+          </div>
+
+          <div class="chart-bar">
+            <canvas id="yearlyBurnChart"></canvas>
+          </div> 
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block footer_scripts %}
+  {{ block.super }}
+
+
+
+
+  <script>
+
+  // Number of objects and losses per layer 
+  var ctx = document.getElementById("ObjectChart");
+  var ObjectChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      datasets: [{
+        label: "Number of objects",
+        yAxisID: "Number of objects",
+        backgroundColor: "#4e73df",
+        hoverBackgroundColor: "#2e59d9",
+        borderColor: "#4e73df",
+        data: {{ table_layer_objects.obj_in_layer }}
+      }],
+      labels: ['Layer 1', 'Layer 2', 'Layer 3']
+    },
+    options: {
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          left: 10,
+          right: 25,
+          top: 25,
+          bottom: 0
+        }
+      },
+      scales: {
+        yAxes: [{
+          id: 'Number of objects',
+          type: 'linear',
+          position: 'left',
+          ticks: {
+            max: 2500,
+            min: 0
+          }
+        }],
+        gridLines: {
+          color: "rgb(234, 236, 244)",
+          zeroLineColor: "rgb(234, 236, 244)",
+          drawBorder: false,
+          borderDash: [2],
+          zeroLineBorderDash: [2]
+        }
+      },
+      legend: {
+        display: false
+      }
+    }
+});
+
+// Detailed view of # of objects per EML band 
+var ctx_eml = document.getElementById("EMLObjectChart");
+var EMLObjectChart = new Chart(ctx_eml, {
+  type: 'bar',
+  data: {
+    datasets: [{
+      label: "Number of objects",
+      yAxisID: "Number of objects",
+      backgroundColor: "#4e73df",
+      hoverBackgroundColor: "#2e59d9",
+      borderColor: "#4e73df",
+      data: {{ histogram_layer_detail.cols }}
+    }],
+    labels: {{ histogram_layer_detail.strings | safe }}
+  },
+  options: {
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        left: 10,
+        right: 25,
+        top: 25,
+        bottom: 0
+      }
+    },
+    scales: {
+      yAxes: [{
+        id: 'Number of objects',
+        type: 'linear',
+        position: 'left',
+        ticks: {
+          max: 600,
+          min: 0
+        }
+      }],
+      gridLines: {
+        color: "rgb(234, 236, 244)",
+        zeroLineColor: "rgb(234, 236, 244)",
+        drawBorder: false,
+        borderDash: [2],
+        zeroLineBorderDash: [2]
+      }
+    },
+    legend: {
+      display: false
+    }
+  }
+});
+
+
+// Growth in each segment
+var ctx_growth = document.getElementById("growthChart");
+var growthChart = new Chart(ctx_growth, {
+  type: 'bar',
+  data: {
+    labels: {{ table_premium_segment.years | safe }},
+    datasets: [{
+      label: "Commercial",
+      backgroundColor: "#4e73df",
+      hoverBackgroundColor: "#2e59d9",
+      borderColor: "#4e73df",
+      data: {{ table_premium_segment.prem_seg_list.0 }},
+    }, {
+      label: "Industrial",
+      data: {{ table_premium_segment.prem_seg_list.1 }}
+    }]
+  },
+  options: {
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        left: 10,
+        right: 25,
+        top: 25,
+        bottom: 0
+      }
+    },
+    scales: {
+      xAxes: [{
+        time: {
+          unit: 'year'
+        },
+        gridLines: {
+          display: false,
+          drawBorder: false
+        },
+        ticks: {
+          maxTicksLimit: 6
+        },
+        maxBarThickness: 25,
+      }],
+      yAxes: [{
+        ticks: {
+          min: 0,
+          max: 150000000,
+          maxTicksLimit: 5,
+          padding: 10,
+          // Include a dollar sign in the ticks
+          callback: function(value, index, values) {
+            return 'SEK ' + number_format(value);
+          }
+        },
+        gridLines: {
+          color: "rgb(234, 236, 244)",
+          zeroLineColor: "rgb(234, 236, 244)",
+          drawBorder: false,
+          borderDash: [2],
+          zeroLineBorderDash: [2]
+        }
+      }],
+    },
+    tooltips: {
+      titleMarginBottom: 10,
+      titleFontColor: '#6e707e',
+      titleFontSize: 14,
+      backgroundColor: "rgb(255,255,255)",
+      bodyFontColor: "#858796",
+      borderColor: '#dddfeb',
+      borderWidth: 1,
+      xPadding: 15,
+      yPadding: 15,
+      displayColors: false,
+      caretPadding: 10,
+      callbacks: {
+        label: function(tooltipItem, chart) {
+          var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+          return datasetLabel + ': SEK ' + number_format(tooltipItem.yLabel);
+        }
+      }
+    },
+  }
+});
+
+
+// Yearly burning cost
+var ctx_yearly_burn = document.getElementById("yearlyBurnChart");
+var yearlyBurnChart = new Chart(ctx_yearly_burn, {
+  type: 'bar',
+  data: {
+    labels: {{ table_layer_loss.years | safe }},
+    datasets: [{
+      label: "Layer 1",
+      backgroundColor: "#4e73df",
+      hoverBackgroundColor: "#2e59d9",
+      borderColor: "#4e73df",
+      data: {{ table_layer_loss.layer_losses.0 }},
+    }, {
+      label: "Layer 2",
+      backgroundColor: "#228B22",
+      hoverBackgroundColor: "#228B22",
+      borderColor: "#228B22",
+      data: {{ table_layer_loss.layer_losses.1 }}, 
+    }, {
+      label: "Layer 3",
+      data: {{ table_layer_loss.layer_losses.2 }}, 
+    }]
+  },
+  options: {
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        left: 10,
+        right: 25,
+        top: 25,
+        bottom: 0
+      }
+    },
+    scales: {
+      yAxes: [{
+        ticks: {
+          min: 0,
+          max: 25000000,
+          maxTicksLimit: 5,
+          padding: 10,
+          // Include a dollar sign in the ticks
+          callback: function(value, index, values) {
+            return 'SEK ' + number_format(value);
+          }
+        },
+        gridLines: {
+          color: "rgb(234, 236, 244)",
+          zeroLineColor: "rgb(234, 236, 244)",
+          drawBorder: false,
+          borderDash: [2],
+          zeroLineBorderDash: [2]
+        }
+      }],
+    },
+    tooltips: {
+      titleMarginBottom: 10,
+      titleFontColor: '#6e707e',
+      titleFontSize: 14,
+      backgroundColor: "rgb(255,255,255)",
+      bodyFontColor: "#858796",
+      borderColor: '#dddfeb',
+      borderWidth: 1,
+      xPadding: 15,
+      yPadding: 15,
+      displayColors: false,
+      caretPadding: 10,
+      callbacks: {
+        label: function(tooltipItem, chart) {
+          var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+          return datasetLabel + ': SEK ' + number_format(tooltipItem.yLabel);
+        }
+      }
+    },
+  }
+});
+
+
+
+  </script>
+
+{% endblock %}

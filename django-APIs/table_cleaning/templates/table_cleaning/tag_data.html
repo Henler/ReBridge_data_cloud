@@ -1,0 +1,120 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+{% load additional_tags %}
+
+{% block title %}Data cloud{% endblock %}
+
+{% block content %}
+<!-- Page Heading --> 
+
+
+<!-- Title -->
+<h1 class="h4 mb-2 text-gray-800">Define type of data in sheets</h1>
+<p class="mb-4">Type of data needs to be defined to produce outputs.</p>
+
+
+<div class="row">
+
+
+<!-- Index of data -->
+{% if datasheet_list %}
+  {% for comb in combined %}
+    <!-- Specify layers -->
+    <div class="col-xl-12 col-md-12 mb-4">
+      <!-- Collapsable Card -->
+      
+      <div class="card shadow mb-4">
+        <!-- Card Header - Accordion -->
+        <a href="#specifyLayers{{ comb.0.id }}" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+            <h6 class="m-0 font-weight-bold text-primary">{{ comb.0.sheet_name }} </h6>
+        </a>
+        <!-- Card Content - Collapse -->
+        <div class="collapse hide" id="specifyLayers{{ comb.0.id }}">
+          <div class="card-body">
+            <form method="post" id="setTagsForm">{% csrf_token %}
+
+
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-4">
+                    <label for="Columns"><b>Columns and tags</b></label>
+                  </div>
+                  <div class="col-8">
+                    <label for="Columns"><b>Data snippet</b></label>
+                  </div>
+                </div>
+
+                <div class="my-2"></div>
+
+                <div class="row">
+                  <!-- Tagging of columns -->
+                  <div class="col-4">
+                    <table id="brand">
+                    {{ comb.1.as_table }}
+                    </table>
+                  </div>
+
+                <div class="my-2"></div>
+
+                <div class="col-8">
+                  <!-- Table with snippet of data -->
+                  <div class="table-responsive">
+                    <table class="table table-bordered" id="claimTable" width="100%" cellspacing="0">
+                      <thead>
+                          <tr>
+                              {% for header in comb.3.0 %}
+                                  <th>{{ header }}</th>
+                              {% endfor %}
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for row in comb.3.1 %}
+                          <tr>
+                              {% for cell in row %}
+                                  <td>{{ cell|num_str_date_format }}</td>
+                              {% endfor %}
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                    
+                </div>
+
+                <div class="my-2"></div>
+
+                <div class="my-2"></div>
+
+                <small id="specifyLayers" class="form-text text-muted">Please define what fields are.</small>
+              </div>
+
+            <!-- Button submit tags -->
+            <button type="submit" class="btn btn-primary" value={{ comb.2 }} name="sheet_ind">Submit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  {% endfor %}
+
+
+<!-- Next button -->
+<div class="col-xl-12 col-md-12 mb-4">
+  <a href="{% url 'table_cleaning:analyze_data' %}" class="btn btn-md btn-primary">Submit</a>
+</div>
+
+
+</div>
+
+{% else %}
+  <p>No sheets are available.</p>
+{% endif %}
+
+
+{% endblock %}
+
+
+
+

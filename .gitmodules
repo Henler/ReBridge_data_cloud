@@ -1,0 +1,9 @@
+[submodule "mysite"]
+	path = django-APIs
+	url = git@52.57.226.112:Theorell/mysite.git
+	branch = master
+
+[submodule "my-app"]
+	path = my-app
+	url = git@52.57.226.112:Henrik/my-app.git
+	branch = master

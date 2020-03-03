@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load additional_tags %}
+
+{% block head_statics %}
+    {{ block.super }}
+
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+
+    <!-- Style used for annotating selected cells -->
+    <style type="text/css">
+        .selected { background-color: #d3d3d3; }
+
+    </style>
+
+{% endblock %}
+
+
+{% block title %}{{ datasheet.sheet_name }}{% endblock %}
+
+
+
+
+{% block content %}
+
+
+{% for group_id in group_ids %}
+<div class="row">
+    <div class="col">
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5><b> Output sheet # {{ forloop.counter }} </b></h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <!-- Constructed triangle -->
+                    <div class="col-6">
+                        <div class="card shadow mb-4">  
+                            <div class="card-body">
+                                <!-- Input data -->
+                                <div class="row pb-3">
+                                    <div class="col">
+                                        <h5><b>Identified input triangles</b></h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col" id="input_column_{{ group_id }}">
+                                        {% for triangle in input.data_struct_list %}
+                                        {% if triangle.card_id == group_id %}
+                                        <div class="card mb-3" data-category="{{ triangle.id }}">
+                                            <a href="#unit_triangle_{{ forloop.counter }}" class="d-block card-header py-3 collapsed" data-toggle="collapse" role="button" aria-expanded="false">
+                                                <h6 class="m-0 font-weight-bold text-primary" id="unit_triangle_title_{{ forloop.counter }}">
+                                                    <!-- Add in logic to show which cards are used -->
+                                                    {% if triangle.roles %}
+                                                    ✅ # {{ forloop.counter }}: {{ triangle.orig_sheet_name }} - {{ triangle.name }}
+                                                    {% else %}
+                                                    📤 # {{ forloop.counter }}: {{ triangle.orig_sheet_name }} - {{ triangle.name }}
+                                                    {% endif %}
+                                                </h6>
+                                            </a>
+                                            <div class="hide collapse" id="unit_triangle_{{ forloop.counter }}">
+                                                <div class="card-body">
+                                                    <div class="row pb-3 border-bottom" id="triangle_form_{{ forloop.counter }}">
+                                                        <form id="unit_triangle_form_{{ forloop.counter }}">
+                                                            <div class="form-check form-check-inline">
+                                                                {% if "Claim - Paid" in triangle.roles %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioPaid" value="Claim - Paid" checked>
+                                                                {% else %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioPaid" value="Claim - Paid">
+                                                                {% endif %}
+                                                                <label class="form-check-label" for="radioPaid">Paid</label>
+                                                            </div>
+                                                            <div class="form-check form-check-inline">
+                                                                {% if "Claim - Reserved" in triangle.roles %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioReserved" value="Claim - Reserved" checked>
+                                                                {% else %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioReserved" value="Claim - Reserved">
+                                                                {% endif %}
+                                                                <label class="form-check-label" for="radioReserved">Reserved</label>
+                                                            </div>
+                                                            {% if output_triangles.0.type == "aggregate" %} 
+                                                            <div class="form-check form-check-inline">
+                                                                {% if "Premium" in triangle.roles %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioPremium" value="Premium" checked>
+                                                                {% else %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioPremium" value="Premium">
+                                                                {% endif %}
+                                                                <label class="form-check-label" for="radioPremium">Premium</label>
+                                                            </div>
+                                                            {% endif %}
+                                                            <div class="form-check form-check-inline">
+                                                                {% if triangle.roles %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioNone" value="None">
+                                                                {% else %}
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptions_{{ forloop.counter }}" id="radioNone" value="None" checked>
+                                                                {% endif %}
+                                                                <label class="form-check-label" for="radioNone">None</label>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+
+                                                    <div class="row mt-3">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered table-hover table-sm" id="input_table_{{ forloop.counter }}" style="font-size:70%">
+                                                                <thead>
+                                                                    {% for header in triangle.df_data.columns.values %}
+                                                                    <th>{{ header }}</th>
+                                                                    {% endfor %}
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for row in triangle.df_data.values %}
+                                                                    <tr>
+                                                                        {% for value in row %}
+                                                                        <td>{{ value|num_str_date_format }}</td>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Output data -->
+                    <div class="col-6">
+                        <div class="card shadow mb-4">  
+                            <div class="card-body">
+                                <div class="row pb-3">
+                                    <div class="col">
+                                        <h5><b>Output triangles</b></h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        {% for triangle in output_triangles %}
+                                        {% if triangle.group_id == group_id %}
+                                        <div class="card mb-3" data-category="{{ triangle.id }}">
+                                            <a href="#output_triangle_{{ forloop.counter }}" class="d-block card-header py-3 collapsed" data-toggle="collapse" role="button" aria-expanded="false">
+                                                <h6 class="m-0 font-weight-bold text-primary">🔧 # {{ forloop.counter }}: Output</h6>
+                                            </a>
+                                            <div class="hide collapse" id="output_triangle_{{ forloop.counter }}">
+                                                <div class="table-responsive mt-3">
+                                                    <table class="table table-bordered table-hover table-sm" id="output_table_{{ forloop.counter }}" style="font-size:70%">
+                                                        <thead>
+                                                            {% for header in triangle.headers %}
+                                                            <th>{{ header }}</th>
+                                                            {% endfor %}
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for row in triangle.rows %}
+                                                            <tr data-category="{% for id in row.ids %} {{ id }} {% endfor %}">
+                                                                {% for value in row.values %}
+                                                                    <td>{{ value|num_str_date_format }}</td>
+                                                                {% endfor %}
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+
+<div class="row pb-4">
+    <div class="col">
+        <a href="{% url 'table_cleaning:dashboard' %}" class="btn btn-primary"><b>Finalize <i class="fas fa-arrow-right"></i></b></a>
+    </div>
+</div>
+
+
+  
+{% endblock %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+
+
+    <!-- AJAX call -->
+    <script type="text/javascript">  
+
+    var output_json = JSON.stringify({{ json_triangles|safe }});
+
+    //Insert thousand seperators
+    function insertThousandSeperators(row_to_transform) {
+        transformed_row = [];
+        row_to_transform.forEach(function(nmbr, i) {
+            if(i > 0) {
+                transformed_row[i] = nmbr.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            } else {
+                transformed_row[i] = nmbr;
+            }
+        });
+        return transformed_row
+    };
+
+    //Remove decimals
+    function removeDecimals(row_to_transform) {
+        transformed_row = [];
+        row_to_transform.forEach(function(nmbr, i) {
+            if(isNaN(nmbr)) {
+                transformed_row[i] = row_to_transform[i];
+            } else {
+                transformed_row[i] = Math.trunc(nmbr);
+            };
+        });
+        return transformed_row;
+    };
+
+    //Update output
+    function update_output(output) {
+        console.log("Updating output");
+        console.log(output);
+        console.log("Updating rows");
+
+        output.forEach(function(triangle, i) {
+            oneIndexed = i+1;
+            console.log("Updating table #: " + oneIndexed);
+            $("#output_table_" + oneIndexed).DataTable().clear();
+            console.log(triangle["rows"]);
+            console.log(triangle["rows"][0]["values"]);
+            console.log(removeDecimals(triangle["rows"][0]["values"]));
+            triangle["rows"].forEach(function(row, i2) {
+                var new_row = $("#output_table_" + oneIndexed).DataTable().row.add(insertThousandSeperators(removeDecimals(row["values"]))).node();
+                $(new_row).attr('data-category', row["ids"]);
+            });
+            $("#output_table_" + oneIndexed).DataTable().draw();
+        });
+    };
+
+    //Send data to server
+    function send_to_server(output, input, change) {
+        $.ajax({
+            method: "POST",
+            url: "http://127.0.0.1:8000/triangle_formatting/create_triangle_table/update",
+            data: {'output': output,
+                    'input': input,
+                    'change': change},
+            dataType: "JSON",
+            success: function(data){
+                console.log("Success");
+                console.log(data);
+                update_output(data["output"]);
+                console.log("Updating output");
+                output_json = JSON.stringify(data["output"]);
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                alert('An error occurred... Look at the console (F12 or Ctrl+Shift+I, Console tab) for more information!');
+
+                $('#result').html('<p>status code: '+jqXHR.status+'</p><p>errorThrown: ' + errorThrown + '</p><p>jqXHR.responseText:</p><div>'+jqXHR.responseText + '</div>');
+                console.log('Error response:');
+                console.log('jqXHR:');
+                console.log(jqXHR);
+                console.log('textStatus:');
+                console.log(textStatus);
+                console.log('errorThrown:');
+                console.log(errorThrown);
+            }
+        });
+    };
+
+    //Called on click in radion button
+    {% for triangle in input.data_struct_list %}
+    $(document).ready(function(){
+        $("#unit_triangle_form_{{ forloop.counter }}").change(function(){
+
+            //Collecting data to send to server
+            console.log("Collecting data");
+            var input_json = JSON.stringify({{ str_data_holder|safe }});
+            var selected_value = $('input[name=inlineRadioOptions_{{ forloop.counter }}]:checked', '#unit_triangle_form_{{ forloop.counter }}').val(); 
+            var selected_triangle = "" + {{ triangle.id }};
+            var change_json = JSON.stringify({'value': selected_value, 'id': selected_triangle});
+
+            console.log("Sending to server");
+            send_to_server(output_json, input_json, change_json);
+
+            if(selected_value == "None") {
+                $("#unit_triangle_title_{{ forloop.counter }}").text("📤 # {{ forloop.counter }}: {{ triangle.orig_sheet_name }} - {{ triangle.name }}");
+            } else {
+                $("#unit_triangle_title_{{ forloop.counter }}").text("✅ # {{ forloop.counter }}: {{ triangle.orig_sheet_name }} - {{ triangle.name }}");
+            };
+        });
+    });
+    {% endfor %}
+
+    {% for group_id in group_ids %}
+        {% for triangle in output_triangles %}
+        //Sort input based on row click output
+        $(document).ready(function() {
+            $('#output_table_{{ forloop.counter }}').on("click", "tr", function () {
+                var found_connections = $(this).attr("data-category").split(/[ ,]/);
+                var selected_cards = new Array();
+                console.log(found_connections);
+
+                $("#input_column_{{ group_id }}").find(".show").removeClass("show").addClass("hide");
+                $("#input_column_{{ group_id }}").find(".card-header").addClass("collapsed");
+                for (var i = 0; i < found_connections.length; i++) {
+                        var selected_card = $('#input_column_{{ group_id }}').find("[data-category='" + found_connections[i] + "']").detach();
+                        selected_card.prependTo($('#input_column_{{ group_id }}'));
+                        selected_card.find(".hide").removeClass("hide").addClass("show");
+                        selected_card.find(".collapsed").removeClass("collapsed").attr("aria-expanded", "true");
+                        selected_card.find(".collapse").addClass("show");
+                        }
+            });
+        });
+        {% endfor %}
+    {% endfor %}
+
+
+    {% for triangle in output_triangles %}
+    //Adjusts headers when table card opened
+    $(document).ready(function () {
+        $('#output_triangle_{{ forloop.counter }}').on('shown.bs.collapse', function() {
+          console.log("shown");
+          $('#output_table_{{ forloop.counter }}').DataTable().columns.adjust()
+        });
+    });
+
+    //Script to make tables searchable & adding category to rows of updated output tabels
+    $(document).ready(function () {
+        $('#output_table_{{ forloop.counter }}').DataTable({
+            "scrollX": true
+        });
+        $('.dataTables_length').addClass('bs-select');
+    });
+    {% endfor %}
+
+
+    {% for triangle in test.data_struct_list %}
+    //Adjusts headers when table card opened
+    $(document).ready(function () {
+        $('#input_triangle_{{ forloop.counter }}').on('shown.bs.collapse', function() {
+          console.log("shown");
+          $('#input_table_{{ forloop.counter }}').DataTable().columns.adjust()
+        });
+    });
+    {% endfor %}
+
+
+    </script>
+
+{% endblock %}

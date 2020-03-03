@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load additional_tags %}
+
+{% block head_statics %}
+    {{ block.super }}
+
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+
+{% endblock %}
+
+
+{% block title %}{{ datasheet.sheet_name }}{% endblock %}
+
+
+
+
+{% block content %}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Table</h1>
+<p class="mb-4">Table giving overview of data available.</p>
+
+    <!-- DataTables  -->
+    {% csrf_token %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ datasheet.sheet.sheet_name }} </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="claimTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            {% for header in headers %}
+                                <th>{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            {% for header in headers %}
+                                <th>{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            {% for cell in row %}
+                                <td class="text-right">{{ cell|num_str_date_format }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+  
+{% endblock %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+
+    <script type="text/javascript">
+    $(document).ready(function () {
+    $('#claimTable').DataTable({
+    "scrollX": true
+    });
+    $('.dataTables_length').addClass('bs-select');
+    });    
+    </script>
+
+
+{% endblock %}

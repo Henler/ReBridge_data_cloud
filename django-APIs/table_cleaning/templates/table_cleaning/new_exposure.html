@@ -1,0 +1,134 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+
+
+{% block title %}Data cloud{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+
+
+<!-- Title -->
+<h1 class="h4 mb-2 text-gray-800">Upload exposure data</h1>
+<p class="mb-4">Choose name and data file.</p>
+
+<!-- Content -->
+<div class="row">
+
+  <!-- Upload data files -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#uploadFile" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+          <h6 class="m-0 font-weight-bold text-primary">Upload data</h6>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="uploadFile">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" onsubmit="this.submit_button.disabled = true;">{% csrf_token %}
+              {{ form.as_p }}
+              <button class="btn btn-primary" type="submit" name="submit_button">
+                Upload
+              </button>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Specify layers
+  <div class="col-xl-12 col-md-12 mb-4">
+    <div class="card shadow mb-4">
+
+      <a href="#specifyLayers" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+          <h6 class="m-0 font-weight-bold text-primary">2. Specify layers</h6>
+      </a>
+
+      <div class="collapse hide" id="specifyLayers">
+        <div class="card-body">
+          <table class="table table-bordered table-hover" id="tab_logic">
+            <thead>
+              <tr >
+                <th class="text-left">
+                  Layer #
+                </th>
+                <th class="text-left">
+                  Lower bound
+                </th>
+                <th class="text-left">
+                  Upper bound
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id='addr0'>
+                <td>
+                1
+                </td>
+                <td>
+                <input type="text" name='name0'  placeholder='Lower bound' class="form-control"/>
+                </td>
+                <td>
+                <input type="text" name='mail0' placeholder='Upper bound' class="form-control"/>
+                </td>
+              </tr>
+              <tr id='addr1'></tr>
+            </tbody>
+          </table>
+          <small id="specifyLayers" class="form-text text-muted">Enter lower and upper bound of layers.</small>
+          <div class="my-2"></div>
+          <div class="row">
+            <div class="col">
+              <a href='javascript:void();' class="btn btn-primary btn-icon-split" id="delete_row">
+                <span class="icon text-white-50">
+                  <i class="fas fa-minus"></i>
+                </span>
+                <span class="text">Remove layer</span>
+              </a>
+            </div>
+            <div class="col">
+              <a href='javascript:void();' class="btn btn-primary btn-icon-split" id="add_row">
+                <span class="icon text-white-50">
+                  <i class="fas fa-plus"></i>
+                </span>
+                <span class="text">Add layer</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  -->
+  <!-- Next button -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <a href="{% url 'table_cleaning:data_cleaning_table' %}" class="btn btn-md btn-primary">Clean data <i class="fas fa-arrow-right"></i></a>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block footer_scripts %}
+  {{ block.super }}
+
+  <script>
+  $(document).ready(function(){
+    var i=1;
+    $("#add_row").click(function(){
+      $('#addr'+i).html("<td>"+ (i+1) +"</td><td><input name='name"+i+"' type='text' placeholder='Lower bound' class='form-control'/> </td><td><input name='mail"+i+"' type='text' placeholder='Upper bound'  class='form-control'></td>");
+
+      $('#tab_logic').append('<tr id="addr'+(i+1)+'"></tr>');
+      i++; 
+  });
+    $("#delete_row").click(function(){
+       if(i>1){
+      $("#addr"+(i-1)).html('');
+      i--;
+      }
+    });
+  });
+  </script>
+
+{% endblock %}

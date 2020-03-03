@@ -1,0 +1,83 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+{% load additional_tags %}
+
+
+{% block title %}Data cloud{% endblock %}
+
+{% block content %}
+  <!-- Page Heading --> 
+  <h1 class="h4 mb-2 text-gray-800">Welcome back, {{ user.username }}</h1>
+
+
+
+  <!-- Reinsurance providers view -->
+  <p class="mb-4">Overview of your uploaded data / exposures.</p>
+
+  <p class="mb-4"></p>
+
+<div class="row">
+  <div class="col-xl-6 col-md-6 mb-4 ">
+    <!-- Collapsable Card  -->
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#collapseCardExample" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+        <h6 class="m-0 font-weight-bold text-primary">{{ datasheet_list.first.reinsurance_package.package_name }}</h6>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="collapseCardExample">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12">
+              <form method="post" enctype="multipart/form-data" onsubmit="this.submit_button.disabled = true;">{% csrf_token %}
+                <p class="card-text">
+                  <b>Upload time:</b>
+                  {{ datasheet_list.first.pub_date }}
+                  <button class="btn btn-primary float-right" type="submit" name="submit_button">
+                    <i class="fa fa-download"></i>
+                  </button>
+                </p>
+              </form>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <hr class="sidebar-divider my-2">
+
+
+          <div class="row">
+            <div class="col-12">
+              {% if datasheet_list %}
+                <div class="list-group flex-row flex-wrap">
+                  <li class="list-group-item active d-flex justify-content-between align-items-center w-100">
+                    Data sheets 
+                    <span class="badge badge-info badge-pill">{{ datasheet_list | length }}</span>
+                  </li>
+                  {% for sheet in datasheet_list %}
+                    <a href="{% url 'table_cleaning:book_detail' sheet.id %}" class="list-group-item w-50 list-group-item-action">{{ sheet.sheet_name }} <i class="fa fa-table float-right"></i></a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <hr class="sidebar-divider my-2">
+
+          <div class="row">
+            <div class="col-12">
+              <a href="{% url 'table_cleaning:analyze_data' %}" class="btn btn-primary"><i class="fa fa-chart-area"></i> Charts</a>
+              <a href="{% url 'table_cleaning:datasheet-list' %}" class="btn btn-primary"><i class="fa fa-plug"></i> API:s</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+
+

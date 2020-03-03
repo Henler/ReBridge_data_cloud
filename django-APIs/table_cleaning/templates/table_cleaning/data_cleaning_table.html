@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load additional_tags %}
+
+{% block head_statics %}
+    {{ block.super }}
+
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+
+    <!-- Style used for annotating selected cells -->
+    <style type="text/css">
+        .selected { background-color: #d3d3d3; }
+
+    </style>
+
+{% endblock %}
+
+
+{% block title %}{{ datasheet.sheet_name }}{% endblock %}
+
+
+
+
+{% block content %}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Clean data</h1>
+<p class="mb-4">{% if diff_dicts %} {{ diff_dicts | length }} sheets with data identified.{% endif %} Inspect corrections done do data.</p>
+
+<!-- DataTables  -->
+{% csrf_token %}
+
+{% for sheet in diff_dicts %}
+<div class="card shadow mb-4">
+    <!-- Card Header - Accordion -->
+    <a href="#sheet{{ sm.sheet.sheet_name|cut:" " }}{{ forloop.counter }}" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true">
+      <h6 class="m-0 font-weight-bold text-primary">{{sheet.sheet_name}}</h6>
+    </a>
+    <!-- Card Content - Collapse -->
+    <div class="collapse hide" id="sheet{{ sm.sheet.sheet_name|cut:" " }}{{ forloop.counter }}">
+        <div class="card-body">
+            <!-- Table with errors -->
+            <div class="table-responsive">
+                <div class="filtertable{{ forloop.counter }}">
+                    <a href="#" class="btn btn-secondary" data-color="all">All rows</a>
+                    <a href="#" class="btn btn-info"data-color="white">Rows with unchanged values</a>
+                    <a href="#" class="btn btn-primary" data-color="blue">Rows with corrected values</a>
+                    <a href="#" class="btn btn-danger" data-color="red">Removed rows</a>
+                </div>
+
+                <div class="my-2"></div>
+
+                <table class="table table-bordered">
+                    <thead>
+                        {% for header in sheet.headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </thead>
+                    <tbody>
+                        {% for row in sheet.diff_array %}
+                            <tr>
+                            {% for cell in row %}
+                                {% if cell.change == "No change" %}
+                                    <td class="text-right" data-color="white">{{ cell.original_value|num_str_date_format }}</td>
+                                {% elif cell.change == "Removed" %}
+                                    <td class="table-danger text-right" data-color="red" data-toggle="tooltip" data-placement="top" title="{{cell.change}}">{{ cell.original_value|num_str_date_format }}</td>
+                                {% elif cell.change == "Added" %}
+                                    <td class="table-success text-right" data-color="green" data-toggle="tooltip" data-placement="top" title="{{cell.change}}">{{ cell.new_value|num_str_date_format }}</td>
+                                {% elif cell.change == "Corrected" %}
+                                    <td class="table-primary text-right" data-color="blue" data-toggle="tooltip" data-placement="top" title="{{cell.change}} from: {{ cell.original_value|num_str_date_format }}" original-value="{{ cell.original_value|num_str_date_format }}" new-value="{{ cell.new_value|num_str_date_format }}">{{ cell.new_value|num_str_date_format }}</td>
+                                {% elif cell.change == "Removed and saved" %}
+                                    <td class="table-warning text-right" data-color="red" data-toggle="tooltip" data-placement="top" title="{{cell.change}}">{{ cell.original_value|num_str_date_format }}</td>
+                                {% elif cell.change == "-" %}
+                                    <td class="table-danger text-right" data-color="red" data-toggle="tooltip" data-placement="top" title="Removed">-</td>
+                                {% endif %}
+                            {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+  
+{% endblock %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+
+    <!-- Script to make tables searchable  -->
+    <script type="text/javascript">
+    $(document).ready(function () {
+    $('#claimTable').DataTable({
+    "scrollX": true
+    });
+    $('.dataTables_length').addClass('bs-select');
+    });    
+    </script>
+
+    <!-- Script to enable toogle popups -->
+    <script type="text/javascript">
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+    </script>
+
+
+    <!-- Scripts to make table filterable -->
+    {% for sheet in diff_dicts %}
+    <script type="text/javascript">
+    $(document).ready(function() {
+    $('.filtertable{{ forloop.counter }} a[data-color]').click(function() {
+        var color = $(this).data().color;
+        if(color == 'all'){
+             $('td[data-color]').parent().show();
+        } else if(color == 'red'){
+            $('td[data-color='+ color +']').parent().show();
+            $('td[data-color!='+color+']').parent().hide();
+        } else {
+            $('td[data-color!='+color+']').parent().hide();
+            $('td[data-color='+ color +']').parent().show();
+        }
+    });
+    }
+    ); 
+    </script>
+    {% endfor %}
+
+    <!-- Script to change color of cells on click -->
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $("td").click(function() {
+            if($(this).attr('data-color') == 'red' && !$(this).hasClass('selected')){
+                $(this).closest('tr').children().toggleClass("selected");
+                $(this).closest('tr').children().attr({
+                    "title" : $(this).attr("data-original-title"),
+                    "data-original-title" : "Keep"
+                });
+                $(this).tooltip('show')
+            } else if($(this).attr('data-color') == 'red' && $(this).hasClass('selected')){
+                $(this).closest('tr').children().toggleClass("selected");
+                $(this).closest('tr').children().attr({
+                    "data-original-title" : $(this).attr("title"),
+                    "title" : "Keep"
+                });
+                $(this).tooltip('show')
+            } else if($(this).attr('data-color') == 'blue' && !$(this).hasClass('selected')) {
+                $(this).toggleClass("selected");
+                $(this).attr({
+                    "data-original-title" : "Suggested new value: " + $(this).attr("new-value")
+                });
+                $(this).html($(this).attr("original-value"));
+                $(this).tooltip('show');
+            } else if($(this).attr('data-color') == 'blue' && $(this).hasClass('selected')) {
+                $(this).toggleClass("selected");
+                $(this).attr({
+                    "data-original-title" : "Corrected from: " + $(this).attr("original-value"),
+                });
+                $(this).html($(this).attr("new-value"));
+                $(this).tooltip('show');
+            }
+        });
+    });
+    </script>
+
+{% endblock %}

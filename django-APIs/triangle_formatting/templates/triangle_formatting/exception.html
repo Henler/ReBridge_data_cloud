@@ -1,0 +1,79 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+{% load static %}
+{% load additional_tags %}
+
+{% block head_statics %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://bossanova.uk/jexcel/v3/jexcel.css" type="text/css" />
+    <link rel="stylesheet" href="https://bossanova.uk/jsuites/v2/jsuites.css" type="text/css" />
+{% endblock %}
+
+{% block title %}Data cloud{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+
+
+<!-- Title -->
+<h1 class="h4 mb-2 text-gray-800">Exceptions</h1>
+<p class="mb-4">There was an issue parsing the excel. {{ exception_message }}</p>
+
+<!-- Content -->
+<!-- DRAFT input.data_struct_list.0 is the first triangle -->
+{% for triangle in input.data_struct_list %}
+<div class="row">
+    <div class="col">
+        <div class="card shadow mb-3">
+            <a href="#exception_{{ forloop.counter }}" class="d-block card-header py-3 collapsed" data-toggle="collapse" role="button" aria-expanded="false">
+              <h6 class="m-0 font-weight-bold text-primary"> Exception #{{ forloop.counter }}: {{ triangle.name }}</h6>
+            </a>
+            <div class="hide collapse" id="exception_{{ forloop.counter }}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="table-responsive">
+                                <div id="spreadsheet_{{ forloop.counter }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+{% endblock %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+    <script src="{% static 'vendor/jexcel/jexcel.js' %}"></script>
+    <script src="{% static 'vendor/jexcel/jsuites.js' %}"></script>
+
+
+    <script type="text/javascript">
+
+    {% for triangle in input.data_struct_list %}
+        var data = [];
+        {% for row in triangle.df_data.values %}
+            var values = [];
+            {% for value in row %}
+                values.push("{{ value }}");
+            {% endfor %}
+            data.push(values);
+        {% endfor %}
+
+        jexcel(document.getElementById('spreadsheet_{{ forloop.counter }}'), {
+            data:data,
+            columns: [
+                {% for header in triangle.df_data.columns.values %}
+                { type: 'text', title:'{{ header }}', width:100 },
+                {% endfor %}
+            ],
+        });
+    {% endfor %}
+    </script>
+
+{% endblock %}

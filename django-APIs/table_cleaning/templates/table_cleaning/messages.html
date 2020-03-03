@@ -1,0 +1,42 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+
+
+
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">Messages</h1>
+    <p class="mb-4">Inbox of messages</p>
+
+
+    <!-- Index of data -->
+        <div class="row">
+
+          <div class="col-xl-12 col-md-6 mb-4">
+          <!-- Collapsable Card Example -->
+          <div class="card shadow mb-4">
+            <!-- Card Header - Accordion -->
+            <a href="#collapseCardExample" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-envelope fa-fw"></i>Hi there! Welcome to the ReBridge platform!</h6>
+              </a>
+              <!-- Card Content - Collapse -->
+              <div class="collapse show" id="collapseCardExample">
+                <div class="card-body">
+                  <p class="card-text">Hi and welcome to the ReBridge platform, </p>
+
+                  <p class="card-text">The platform is highly customizable to meet your needs and could be integrated to needed data layers </p>
+ 
+                  <p class="card-text">Also, this is where we will keep you up to date on events and updates. </p>
+                  <div class="small text-gray-500">Henrik Löfberg · 58m</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}
+
+
+
+

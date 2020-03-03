@@ -1,0 +1,43 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+
+
+
+{% block title %}Data cloud{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<h1 class="h4 mb-2 text-gray-800">Tables</h1>
+<p class="mb-4">Overview of detailed data tables.</p>
+
+
+<!-- Index of data -->
+  {% if datasheet_list %}
+    <div class="row">
+      {% for datasheet in datasheet_list %}
+
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1"><a href="{% url 'table_cleaning:book_detail' datasheet.id %}">{{ datasheet.sheet_name }}</a></div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-table fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+{% else %}
+    <p>No tables are available.</p>
+{% endif %}
+{% endblock %}
+
+
+
+

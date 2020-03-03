@@ -1,0 +1,432 @@
+<!-- templates/home.html-->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Data cloud{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+
+
+<!-- Title -->
+<h1 class="h4 mb-2 text-gray-800">Chose wanted output format and upload data</h1>
+<p class="mb-4">Select format, units, and upload data.</p>
+
+<!-- Content -->
+<div class="row">
+
+  <!-- Upload data files -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#uploadFile" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+        <h6 class="m-0 font-weight-bold text-primary">Upload data</h6>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="uploadFile">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" id="uploadDataForm" name="uploadDataForm" onsubmit="this.submit_button.disabled = true;">{% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary" type="submit" name="upload_data" value="upload_data">
+              Upload
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chose triangle type -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <div class="card shadow mb-4">
+      <!-- Card Header - Accordion -->
+      <a href="#triangleType" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+          <h6 class="m-0 font-weight-bold text-primary">Choose type of output</h6>
+      </a>
+      <!-- Card Content - Collapse -->
+      <div class="collapse show" id="triangleType">
+        <div class="card-body">
+
+          <div class="row border-bottom pt-3 pb-3">
+            <div class="col">
+              <input type="number" class="form-control" id="number_of_sheets" aria-describedby="nmbrSheetsHelp" placeholder="Enter number of output triangles">
+            </div>
+          </div>
+
+
+          <!-- Input to table -->
+          <div class="row border-bottom pt-3 pb-3">
+            <div class="col-sm-6">
+              <div class="card sub-card border-left-primary" type="aggregated" id="aggregated_button">
+                <div class="card-body">
+                  <div class="col">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Aggregated</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="card sub-card border-left-primary" type="single">
+                <div class="card-body">
+                  <div class="col">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Single loss</div>
+                  </div>                
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generated table -->
+          <div class="row pt-3">
+            <div class="col">
+              <table class="table table-bordered table-hover table-sm" id="table_output" width="600" border="0">
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Next button -->
+  <div class="col-xl-12 col-md-12 mb-4">
+    <form method="post" enctype="multipart/form-data" id="hiddenInputForm" name="hiddenInputForm">{% csrf_token %}
+      <input id="hiddenNumberTriangles" name="nmbr_outputs" type="hidden" value="">
+      <input id="hiddenInput" name="html_table" type="hidden" value="0">
+
+      <div id="hiddenInputFormLists"></div>
+
+      <button class="btn btn-primary" type="submit" name="to_output" value="to_output">
+      Clean data <i class="fas fa-arrow-right"></i>
+      </button>
+    </form>
+  </div>
+
+
+  <!-- Experimental file upload -->
+<form enctype="multipart/form-data">
+    <input name="file" type="file" />
+    <input type="button" value="Upload" />
+</form>
+
+
+
+
+</div>
+
+{% endblock %}
+
+{% block footer_scripts %}
+  {{ block.super }}
+
+  <script>
+
+  var Upload = function (file) {
+    this.file = file;
+  };
+
+  Upload.prototype.getType = function() {
+      return this.file.type;
+  };
+  Upload.prototype.getSize = function() {
+      return this.file.size;
+  };
+  Upload.prototype.getName = function() {
+      return this.file.name;
+  };
+  Upload.prototype.doUpload = function () {
+      var that = this;
+      var formData = new FormData();
+
+      // add assoc key values, this will be posts values
+      formData.append("file", this.file, this.getName());
+      formData.append("upload_file", true);
+
+      $.ajax({
+          type: "POST",
+          url: "http://127.0.0.1:8000/triangle_formatting/upload_file_API",
+          xhr: function () {
+              var myXhr = $.ajaxSettings.xhr();
+              if (myXhr.upload) {
+                  myXhr.upload.addEventListener('progress', that.progressHandling, false);
+              }
+              return myXhr;
+          },
+          success: function (data) {
+            console.log("Success");
+          },
+          error: function (error) {
+            console.log('Error response:');
+            console.log('jqXHR:');
+            console.log(jqXHR);
+            console.log('textStatus:');
+            console.log(textStatus);
+            console.log('errorThrown:');
+            console.log(errorThrown);
+          },
+          async: true,
+          data: formData,
+          cache: false,
+          contentType: false,
+          processData: false,
+          timeout: 60000
+      });
+  };
+
+  Upload.prototype.progressHandling = function (event) {
+      var percent = 0;
+      var position = event.loaded || event.position;
+      var total = event.total;
+      var progress_bar_id = "#progress-wrp";
+      if (event.lengthComputable) {
+          percent = Math.ceil(position / total * 100);
+      }
+      // update progressbars classes so it fits your code
+      $(progress_bar_id + " .progress-bar").css("width", +percent + "%");
+      $(progress_bar_id + " .status").text(percent + "%");
+  };
+
+  $(function() {
+      $(':file').on('change', function () {
+        var file = this.files[0];
+        var upload = new Upload(file);
+
+        // maby check size or type here with upload.getSize() and upload.getType()
+
+        // execute upload
+        upload.doUpload();
+        });
+  });
+
+  $(function() {
+      $(':button').on('click', function () {
+        console.log("Button pressed");
+        upload_data("test");
+      });
+    });
+
+  $(function() {
+    $("#hiddenInputForm").submit(function () {
+      var html = $('#table_output').prop('outerHTML');
+      console.log(html)
+      $("#hiddenInput").val(html)
+      return true;
+      });
+    });
+
+
+//Card hover effect
+$(document).ready(function() {
+// executes when HTML-Document is loaded and DOM is ready
+  $( ".sub-card" ).hover(function() {
+      $(this).addClass('shadow-lg').css('cursor', 'pointer'); 
+    }, function() {
+      $(this).removeClass('shadow-lg');
+    }
+  );
+});
+
+//Card select effect and table generation
+$(document).ready(function() {
+
+  var agg_html_claim = "<thead>" +
+                          "<th>Year</th>" + 
+                          "<th>Unit</th>" + 
+                          "<th>1</th>" + 
+                          "<th>2</th>" + 
+                          "<th>3</th>" + 
+                          "<th>4</th>" + 
+                        "</thead>" +
+                        "<tbody>" +
+                          "<tr data-category='ClaimPaid'>" +
+                            "<td>" + "-" + "</td>" +
+                            "<td>" + "Claim - Paid" + "</td>" +
+                          "</tr>" +
+                          "<tr data-category='ClaimReserved'>" +
+                            "<td>" + "-" + "</td>" +
+                            "<td>" + "Claim - Reserved" + "</td>" +
+                          "</tr>" +
+                          "<tr data-category='ClaimIncurred'>" +
+                            "<td>" + "-" + "</td>" +
+                            "<td>" + "Claim - Incurred" + "</td>" +
+                          "</tr>" +
+                          "<tr data-category='ClaimPaid'>" +
+                            "<td>" + "-" + "</td>" +
+                            "<td>" + "Claim - Paid" + "</td>" +
+                          "</tr>" +
+                          "<tr data-category='ClaimReserved'>" +
+                            "<td>" + "-" + "</td>" +
+                            "<td>" + "Claim - Reserved" + "</td>" +
+                          "</tr>" +
+                          "<tr data-category='ClaimIncurred'>" +
+                            "<td>" + "-" + "</td>" +
+                            "<td>" + "Claim - Incurred" + "</td>" +
+                          "</tr>" +
+                        "</tbody>"
+
+  var agg_html_prem = "<thead>" +
+                        "<th>Year</th>" + 
+                        "<th>Unit</th>" + 
+                        "<th>1</th>" + 
+                        "<th>2</th>" + 
+                        "<th>3</th>" + 
+                        "<th>4</th>" + 
+                      "</thead>" +
+                      "<tbody>" +
+                        "<tr data-category='Premium'>" +
+                          "<td>" + "-" + "</td>" +
+                          "<td>" + "Premium" + "</td>" +
+                        "</tr>" +
+                        "<tr data-category='Premium'>" +
+                          "<td>" + "-" + "</td>" +
+                          "<td>" + "Premium" + "</td>" +
+                        "</tr>" +
+                      "</tbody>"
+
+  var single_html = "<thead>" +
+                      "<th>Date of loss</th>" +
+                      "<th>Loss id</th>" +
+                      "<th>Unit</th>" + 
+                      "<th>1</th>" + 
+                      "<th>2</th>" + 
+                      "<th>3</th>" + 
+                      "<th>4</th>" + 
+                    "</thead>" +
+                    "<tbody>" +
+                      "<tr data-category='ClaimPaid'>" +
+                        "<td>" + "2007" + "</td>" +
+                        "<td>" + "1554" + "</td>" +
+                        "<td>" + "Claim - Paid" + "</td>" +
+                      "</tr>" +
+                      "<tr data-category='ClaimReserved'>" +
+                        "<td>" + "2007" + "</td>" +
+                        "<td>" + "1554" + "</td>" +
+                        "<td>" + "Claim - Reserved" + "</td>" +
+                      "</tr>" +
+                      "<tr data-category='ClaimIncurred'>" +
+                        "<td>" + "2007" + "</td>" +
+                        "<td>" + "1554" + "</td>" +
+                        "<td>" + "Claim - Incurred" + "</td>" +
+                      "</tr>" +
+                    "</tbody>"
+
+  $( ".sub-card" ).click(function() {
+    $(".sub-card").removeClass("bg-light");
+    $(this).addClass('bg-light');
+
+    //If aggregated
+    if($(this).attr('type') == 'aggregated'){
+      $("#table_output").empty();
+      $("#table_output").append(agg_html_claim);
+      $("#table_output").append(agg_html_prem);
+
+      $('#hiddenInputFormLists').find(":hidden").not('input[name=csrfmiddlewaretoken]').remove();
+
+      $('<input>').attr({
+        type: 'hidden',
+        value: "aggregate",
+        name: "type"
+      }).appendTo('#hiddenInputFormLists');
+
+
+    //If single loss
+    } else if($(this).attr('type') == 'single'){
+      $("#table_output").empty();
+      $("#table_output").append(single_html);
+
+      $('#hiddenInputFormLists').find(":hidden").not('input[name=csrfmiddlewaretoken]').remove();
+
+      $('<input>').attr({
+        type: 'hidden',
+        value: "single",
+        name: "type"
+      }).appendTo('#hiddenInputFormLists');
+    }
+  });
+});
+
+//Currency selection script
+$(document).ready(function() { 
+  $("#currency").on("keypress", function(e) {
+    if(e.which == 13) {
+      var index = $("#table_output").find("th[type='currency']").index();
+      if (index == -1) {
+        $('#table_output tr:first').prepend("<th type='currency'>Currency</th>");
+        $('#table_output').find('tr').slice(1).each(function(){
+            $(this).prepend($('<td/>', {
+              text: $("#currency").val()
+            })
+            );
+       });
+
+        $('<input>').attr({
+          type: 'hidden',
+          value: $("#currency").val(),
+          name: "currency"
+      }).prependTo('#hiddenInputFormLists');
+
+        $('<input>').attr({
+          type: 'hidden',
+          value: "Currency",
+          name: "header"
+      }).prependTo('#hiddenInputFormLists');
+
+    } else {
+        $('#table_output').find('tr').slice(1).each(function(){
+            $(this).children().eq(index).text($("#currency").val());
+        });
+
+        $("#hiddenInputFormLists").find("input[name='currency']").val($("#currency").val());
+
+        }
+  }
+  });
+});
+
+//Number of triangles selection script
+$(document).ready(function() { 
+  $("#number_of_sheets").on("change", function(e) {
+      console.log("Updating # of output trinagles");
+      console.log($("#number_of_sheets").val());
+      $("#hiddenNumberTriangles").val($("#number_of_sheets").val());
+  });
+});
+
+
+
+//Adding headers
+$(document).ready(function(){
+  $("#tags").on("keypress",function(e){
+    if(e.which == 13) {
+      $('#table_output tr:first').prepend($('<th/>', {
+            text: $("#tags").val()
+          }).append(
+          $())
+        );
+    $('#table_output').find('tr').slice(1).each(function(){
+      $(this).prepend($('<td/>', {
+        text: "-"
+        })
+      );
+     });
+
+    $('<input>').attr({
+      type: 'hidden',
+      value: $("#tags").val(),
+      name: "header"
+    }).prependTo('#hiddenInputFormLists');
+    }
+  });
+});
+
+
+//Click aggregate on page load
+$(document).ready(function(){
+    $("#aggregated_button").click();
+});
+
+
+</script>
+
+{% endblock %}
