@@ -104,28 +104,7 @@ REST_FRAMEWORK = {
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-if 'RDS_DB_NAME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'data_cloud_db1',
-            'USER': 'psqluser',
-            'PASSWORD': 'ghetto_body_buddy',
-            'HOST': 'localhost',
-            'PORT': '',
-        }
-    }
+DATABASES = {}
 
 
 # Password validation
